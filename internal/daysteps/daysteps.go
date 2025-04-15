@@ -5,6 +5,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Yandex-Practicum/tracker/internal/spentcalories"
+	"github.com/golangci/golangci-lint/pkg/result"
 )
 
 const (
@@ -38,6 +41,28 @@ func parsePackage(data string) (int, time.Duration, error) {
 	return steps, duration, nil
 }
 
+// DayActionInfo функция возвращает инофрмацию о кол-ве шагов, пройденную дистанцию и сожженные калории
 func DayActionInfo(data string, weight, height float64) string {
-	// TODO: реализовать функцию
+	steps, duration, err := parsePackage(data)
+	if err != nil {
+		fmt.Printf("Ошибка парсинга данных: %v\n", err)
+		return ""
+	}
+	if steps <= 0 {
+		fmt.Printf("Некорректное количество шагов: %d\n", steps)
+		return ""
+	}
+
+	distanceMeters := float64(steps) * stepLength
+	distanceKm := distanceMeters / mInKm
+
+	calories, err := spentcalories.WalkingSpentCalories(steps, weight, height, duration)
+	if err != nil {
+		fmt.Printf("Ошибка расчёта калорий: %v\n", err)
+		return ""
+	}
+
+	result := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли $.2f ккал.", steps, distanceKm, calories)
+
+	return result
 }
