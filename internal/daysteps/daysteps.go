@@ -2,12 +2,12 @@ package daysteps
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Yandex-Practicum/tracker/internal/spentcalories"
-	"github.com/golangci/golangci-lint/pkg/result"
 )
 
 const (
@@ -37,6 +37,9 @@ func parsePackage(data string) (int, time.Duration, error) {
 	if err != nil {
 		return 0, 0, fmt.Errorf("ошибка преоборзаования продолжительности (%s): %w", comma[1], err)
 	}
+	if duration <= 0 {
+		return 0, 0, fmt.Errorf("продолжительность должна быть больше 0")
+	}
 
 	return steps, duration, nil
 }
@@ -45,11 +48,11 @@ func parsePackage(data string) (int, time.Duration, error) {
 func DayActionInfo(data string, weight, height float64) string {
 	steps, duration, err := parsePackage(data)
 	if err != nil {
-		fmt.Printf("Ошибка парсинга данных: %v\n", err)
+		log.Printf("Ошибка парсинга данных: %v", err)
 		return ""
 	}
 	if steps <= 0 {
-		fmt.Printf("Некорректное количество шагов: %d\n", steps)
+		log.Printf("Некорректное количество шагов: %d", steps)
 		return ""
 	}
 
@@ -58,11 +61,10 @@ func DayActionInfo(data string, weight, height float64) string {
 
 	calories, err := spentcalories.WalkingSpentCalories(steps, weight, height, duration)
 	if err != nil {
-		fmt.Printf("Ошибка расчёта калорий: %v\n", err)
+		log.Printf("Ошибка расчёта калорий: %v", err)
 		return ""
 	}
 
-	result := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли $.2f ккал.", steps, distanceKm, calories)
-
+	result := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n", steps, distanceKm, calories)
 	return result
 }
